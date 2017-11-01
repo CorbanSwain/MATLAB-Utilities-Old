@@ -1,0 +1,12 @@
+# Remove All Files to keep all other MATLAB scripts out of the repo
+*
+
+# Add Specific Scripts
+!corbanFigureDefaults.m
+!du2fu.m
+!cleanUp.m
+!saveFigure.m
+!saveAllFigures.m
+
+# Add .gitignore
+!.gitignore
