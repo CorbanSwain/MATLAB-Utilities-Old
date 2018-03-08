@@ -79,8 +79,11 @@ classdef FigureBuilder
         
         function setDefaults
             % setFigureDefaults Sets default values to make pretty figures.
-            
-            fontSize = 13;
+            if ismac
+               fontSize = 18;
+            else
+               fontSize = 13;
+            end
             font = 'Helvetica';
             set(groot, ...
                 'defaultLineMarkerSize', 40,...
