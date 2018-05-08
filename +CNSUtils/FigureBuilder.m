@@ -36,20 +36,25 @@ classdef FigureBuilder
             end
         end % function figure(obj)
         
-        function save(obj)
+        function save(obj, varargin)
             if isempty(obj.FigureHandle)
                 figure(obj);
             end
-            obj.saveFigure(obj.FigureHandle);
+            obj.saveFigure(obj.FigureHandle, varargin{:});
         end % function save(obj)
     end % methods
     
     methods (Static)
-        function saveFigure(figureHandle, figureName)
+        function saveFigure(figureHandle, varargin)
             % saveFigure Saves the passed figure as a 300 dpi png.
             
-            if ~isdir([pwd filesep 'Figures'])
-                mkdir 'Figures'
+            p = inputParser;
+            p.addOptional('figureDir', 'figures', @isstr)
+            p.parse(varargin{:})
+            figureDir = p.Results.figureDir;
+            
+            if ~isdir(figureDir)
+                mkdir(figureDir)
             end
             f = gobjects(1,1);
             name = '';
@@ -60,20 +65,19 @@ classdef FigureBuilder
                     f = figureHandle;
                 case 2
                     f = figureHandle;
-                    name = figureName;
             end
             if isempty(name)
                 if isempty(f.Name)
-                    name = 'Untitled';
+                    name = 'untitled';
                 else
                     name = f.Name;
                 end
             else
                 if ~isempty(f.Name)
-                    name = [name, '-', f.Name];
+                    name = [name, '_', f.Name];
                 end
             end
-            filename = ['Figures', filesep, name, '.png'];
+            filename = fullfile(figureDir, [name, '.png']);
             print(f,filename,'-dpng','-r300');
         end % saveFigure()
         
@@ -82,11 +86,11 @@ classdef FigureBuilder
             if ismac
                fontSize = 18;
             else
-               fontSize = 13;
+               fontSize = 11.5;
             end
             font = 'Helvetica';
             set(groot, ...
-                'defaultLineMarkerSize', 40,...
+                'defaultLineMarkerSize', 8,...
                 'defaultLineLineWidth', 3, ...
                 'defaultAxesFontSize', fontSize, ...
                 'defaultAxesTitleFontWeight', 'normal', ...

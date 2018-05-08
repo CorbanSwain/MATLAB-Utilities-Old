@@ -7,6 +7,7 @@ classdef PlotBuilder
         LineSpec = {'-'} % setter update cell length
         MarkerSize % setter update cell length
         MarkerFaceColor % setter update cell length
+        FillMarker = true
         LineWidth % setter update cell length
         Grid = 'off'
         XScale = 'linear'
@@ -18,12 +19,15 @@ classdef PlotBuilder
         LegendLabels
         LegendLineWidth = 1.5
         LegendLocation = 'best'
+        LegendColumns = 1
+        LegendBox = 'on'
         LegendTitle
         YError
         AxisAssignment
         Box = 'off'
     end
     methods
+       
         function obj = set.X(obj, val)
             obj.X = CNSUtils.convert2cell(val);
         end
@@ -48,7 +52,13 @@ classdef PlotBuilder
                 end
             end
             if  nYVals ~= length(obj.X)
-                error('x and y cell arrays have mismatched dimensions.');
+               if length(obj.X) == 1
+                  Xtemp = obj.X{1};
+                  obj.X = cell(nYVals, 1);
+                  [obj.X{:}] = deal(Xtemp);
+               else
+                  error('x and y cell arrays have mismatched dimensions.');
+               end
             end
             if nargin == 1
                 figure; clf;
@@ -95,13 +105,27 @@ classdef PlotBuilder
                     if (mod(i, obj.LineSpecCycleLength) == 0)
                         lineSpecIndex = lineSpecIndex + 1;
                     end
+                else
+                   if length(obj.LineSpec) > 1                      
+                      lineSpecIndex = lineSpecIndex + 1;
+                   end
+                end
+                
+                if isempty(obj.MarkerFaceColor)
+                   if obj.FillMarker
+                      h.MarkerFaceColor = h.Color;
+                   end
                 end
                 
                 for iSetting = 1:length(plotSettingNames)
                     name = plotSettingNames{iSetting};
                     propertyVal = obj.(name);
-                    if ~isempty(propertyVal) && ~isempty(propertyVal{i})
-                        h.(name) = propertyVal{i};
+                    if ~isempty(propertyVal)
+                       if iscell(propertyVal)
+                          h.(name) = propertyVal{i};
+                       else
+                          h.(name) = propertyVal;
+                       end
                     end
                 end
                            
@@ -139,12 +163,22 @@ classdef PlotBuilder
         end
 
         if ~isempty(obj.LegendLabels)
-            legendHandle = legend(obj.LegendLabels);
+            lgd = legend(obj.LegendLabels);
             if ~isempty(obj.LegendTitle)
-                title(legendHandle, obj.LegendTitle);
+                title(lgd, obj.LegendTitle);
             end
-            legendHandle.LineWidth = obj.LegendLineWidth;
-            legendHandle.Location = obj.LegendLocation;
+            lgd.LineWidth = obj.LegendLineWidth;
+            lgd.Location = obj.LegendLocation;
+            lgd.Box = obj.LegendBox;
+            try
+               lgd.NumColumns = obj.LegendColumns;
+            catch
+               if obj.LegendColumns > 1
+                  warning(['No NumColumns property of legend,', ...
+                     ' using Orientation instead.'])
+                  lgd.Orientation = 'horizontal';
+               end
+            end
         end
     end
 end
